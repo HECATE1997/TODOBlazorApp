@@ -1,0 +1,80 @@
+﻿@page "/"
+@using TodoAppBlazorServer.Services;
+@using TodoAppBlazorServer.Shared;
+@inject ITodoService _todoService;
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<p>Welcome to your new app.</p>
+<p> hello world</p>
+<div class="border" style="padding: 20px;">
+    <h4> New Item </h4>
+    <TodoItemFoem OnItemAdded="@ItemsChanged"></TodoItemFoem>
+</div>
+
+<div class="border" style="padding: 20px; margin-top: 20px;">
+    <div style= "display: flex; flex-direction:column">
+        @foreach(var todo in Todos)
+        {
+            <div style="display:flex; margin-bottom: 10px;">
+                <div style="display: flex; align-items:center;margin-bottom: 10px;">
+                    <div class ="@ItemClass(todo)" style="width : 280px;">@todo.Text</div>
+                </div>
+                @if(todo.Completed)
+                {
+                    @* <div style="margin-right: 10px;">Completed</div> *@
+                    <div style="width: 120px">
+                        <button class="btn btn-primary" onclick="@(()=>Uncompleted(todo))">Uncompleted</button>
+                    </div>
+                }
+                else
+                {
+                    <div style="width: 120px">
+                        <button class="btn btn-primary" onclick="@(() => Completed(todo))">Completed</button>
+                    </div>
+                }
+                <div>
+                     <button class="btn btn-danger" onclick="@(() => DeleteItem(todo))">Delete</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private IList<TodoItem> Todos { get; set; } = new List<TodoItem>();
+
+    protected override void OnInitialized()
+    {
+        Todos = _todoService.GetAll().ToList();
+    }
+
+    private string ItemClass(TodoItem todo)
+    {
+        return todo.Completed ? "item-completed" : "";
+    }
+
+    public void ItemsChanged()
+    {
+        Todos = _todoService.GetAll().ToList();
+        StateHasChanged();
+    }
+    public void DeleteItem(TodoItem todo)
+    {
+        _todoService.Delete(todo);
+         Todos = _todoService.GetAll().ToList();
+        StateHasChanged();
+    }
+    public void Uncompleted(TodoItem todo)
+    {
+        _todoService.Uncomplete(todo);
+        StateHasChanged();
+    }
+    public void Completed(TodoItem todo)
+    {
+        _todoService.Complete(todo);
+        StateHasChanged();
+    }
+}
